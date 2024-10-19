@@ -229,3 +229,49 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 ```
+
+# Improvements
+
+## CloudWatch Alarms
+
+1. Cloudwatch alarm for **RDS Memory** utilization
+
+```ruby
+resource "aws_cloudwatch_metric_alarm" "rds-postgres-memory-utilization-alarm" {
+  alarm_name          = "${var.project}-rds-postgres-memory-utilization-alarm-${var.environment}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "FreeableMemory"
+  namespace           = "AWS/RDS"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "6400"
+  alarm_description   = "This metric monitors RDS Postgres memory utilization"
+  alarm_actions       = [aws_sns_topic.databases-sns-topic.arn]
+  ok_actions          = [aws_sns_topic.databases-sns-topic.arn]
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.rds-postgres.id
+  }
+}
+```
+
+2. Cloudwatch alarm for **RDS Storage** utilization
+
+```ruby
+resource "aws_cloudwatch_metric_alarm" "rds-postgres-storage-utilization-alarm" {
+  alarm_name          = "${var.project}-rds-postgres-storage-utilization-alarm-${var.environment}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "FreeStorageSpace"
+  namespace           = "AWS/RDS"
+  period              = "3600"
+  statistic           = "Average"
+  threshold           = "16000"
+  alarm_description   = "This metric monitors RDS Postgres storage utilization"
+  alarm_actions       = [aws_sns_topic.databases-sns-topic.arn]
+  ok_actions          = [aws_sns_topic.databases-sns-topic.arn]
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.rds-postgres.id
+  }
+}
+```
